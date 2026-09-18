@@ -144,6 +144,9 @@ fun StockHubScreen(
                             )
                         }
                         Spacer(modifier = Modifier.width(10.dp))
+                        val currentStock = remember(currentSymbol) {
+                            CanadianMarketData.featuredStocks.firstOrNull { it.symbol.equals(currentSymbol, ignoreCase = true) }
+                        }
                         Column {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
@@ -162,7 +165,7 @@ fun StockHubScreen(
                                         .padding(horizontal = 5.dp, vertical = 1.dp)
                                 ) {
                                     Text(
-                                        text = "ANALYTICS",
+                                        text = currentStock?.sector?.uppercase() ?: "ANALYTICS",
                                         style = MaterialTheme.typography.labelSmall.copy(
                                             fontSize = 9.sp,
                                             fontWeight = FontWeight.Bold,
@@ -172,7 +175,7 @@ fun StockHubScreen(
                                 }
                             }
                             Text(
-                                text = "TSX Institutional Profile • Fundamentals, Charts & Financials",
+                                text = currentStock?.name ?: "TSX Stock Overview & Analysis",
                                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )

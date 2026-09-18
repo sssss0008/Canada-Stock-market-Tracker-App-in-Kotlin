@@ -64,8 +64,8 @@ fun ChartScreen(
     val focusManager = LocalFocusManager.current
 
     val popularChips = listOf(
-        "TSX:OSPTX" to "S&P/TSX",
         "TSX:SHOP" to "SHOP",
+        "TSX:OSPTX" to "S&P/TSX",
         "TSX:RY" to "RY",
         "TSX:TD" to "TD",
         "TSX:ENB" to "ENB",
@@ -129,6 +129,9 @@ fun ChartScreen(
                             )
                         }
                         Spacer(modifier = Modifier.width(10.dp))
+                        val currentStock = remember(currentSymbol) {
+                            CanadianMarketData.featuredStocks.firstOrNull { it.symbol.equals(currentSymbol, ignoreCase = true) }
+                        }
                         Column {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
@@ -147,7 +150,7 @@ fun ChartScreen(
                                         .padding(horizontal = 5.dp, vertical = 1.dp)
                                 ) {
                                     Text(
-                                        text = "LIVE",
+                                        text = currentStock?.sector?.uppercase() ?: "TSX",
                                         style = MaterialTheme.typography.labelSmall.copy(
                                             fontSize = 9.sp,
                                             fontWeight = FontWeight.Bold,
@@ -157,7 +160,7 @@ fun ChartScreen(
                                 }
                             }
                             Text(
-                                text = "TSX Toronto Stock Exchange • Real-Time Interactive Chart",
+                                text = currentStock?.name ?: "TSX Interactive Chart",
                                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )

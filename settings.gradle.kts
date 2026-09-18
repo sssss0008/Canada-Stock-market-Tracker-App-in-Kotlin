@@ -22,6 +22,6 @@ dependencyResolutionManagement {
   }
 }
 
-rootProject.name = "Canada Market Tracker"
+rootProject.name = "Canada Stock Screener"
 
 include(":app")

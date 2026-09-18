@@ -1,6 +1,6 @@
 {
-  "name": "Canada Market Tracker",
-  "description": "Real-time Canadian market tracking suite with live TSX charts, ticker tape, sector heatmap, stock screener, economic calendar, technical analysis, and company fundamentals.",
+  "name": "Canada Stock Screener",
+  "description": "Real-time Canadian market tracking suite with live TSX charts, ticker tape, sector heatmap, stock screener, economic calendar, and company fundamentals.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

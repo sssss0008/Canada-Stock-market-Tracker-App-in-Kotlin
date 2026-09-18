@@ -118,8 +118,8 @@ object TradingViewHtmlBuilder {
                   "backgroundColor": "$bg",
                   "gridColor": "rgba(46, 46, 46, 0.15)",
                   "watchlist": [
-                    "TSX:OSPTX",
                     "TSX:SHOP",
+                    "TSX:OSPTX",
                     "TSX:RY",
                     "TSX:TD",
                     "TSX:ENB",

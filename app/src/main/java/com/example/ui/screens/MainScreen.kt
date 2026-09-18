@@ -33,9 +33,13 @@ import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.CandlestickChart
 import androidx.compose.material.icons.filled.GridView
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.ShowChart
+import androidx.compose.material.icons.filled.TravelExplore
+import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material.icons.filled.ViewStream
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -64,6 +68,15 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.ui.draw.scale
+import com.example.ui.components.AnimatedMapleEmblem
+import com.example.ui.components.CandlestickChartVector
+import com.example.ui.components.GlassButton
 import com.example.ui.components.TradingViewWidgetView
 import com.example.widget.TradingViewHtmlBuilder
 
@@ -71,11 +84,13 @@ import com.example.widget.TradingViewHtmlBuilder
 fun MainScreen(
     isDark: Boolean,
     onToggleTheme: () -> Unit,
+    onOpenOnboarding: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var selectedTab by rememberSaveable { mutableIntStateOf(0) }
-    var currentSymbol by rememberSaveable { mutableStateOf("TSX:OSPTX") }
+    var currentSymbol by rememberSaveable { mutableStateOf("TSX:SHOP") }
     var showTickerTape by rememberSaveable { mutableStateOf(true) }
+    var showAboutDialog by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -95,56 +110,49 @@ fun MainScreen(
                             .padding(horizontal = 14.dp, vertical = 9.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Canadian Flag Brand Emblem
-                        Box(
-                            modifier = Modifier
-                                .size(34.dp)
-                                .clip(RoundedCornerShape(9.dp))
-                                .background(
-                                    Brush.linearGradient(
-                                        colors = listOf(
-                                            Color(0xFFDC2626),
-                                            Color(0xFF991B1B)
-                                        )
-                                    )
-                                )
-                                .border(
-                                    width = 1.dp,
-                                    color = Color.White.copy(alpha = 0.2f),
-                                    shape = RoundedCornerShape(9.dp)
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "🇨🇦",
-                                fontSize = 18.sp
-                            )
-                        }
+                        // Canadian Flag Brand Emblem with animated institution glow
+                        AnimatedMapleEmblem(
+                            modifier = Modifier.padding(end = 4.dp),
+                            size = 36.dp
+                        )
 
-                        Spacer(modifier = Modifier.width(10.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
 
                         Column(modifier = Modifier.weight(1f)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
-                                    text = "Canada Market",
+                                    text = "Canada Stock Screener",
                                     style = MaterialTheme.typography.titleMedium.copy(
                                         fontWeight = FontWeight.Bold,
-                                        fontSize = 16.sp
+                                        fontSize = 15.sp,
+                                        letterSpacing = (-0.2).sp
                                     ),
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
-                                Spacer(modifier = Modifier.width(7.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
                                 // Live TSX Badge with pulsating glowing dot
                                 Row(
                                     modifier = Modifier
-                                        .clip(RoundedCornerShape(4.dp))
-                                        .background(Color(0xFFDC2626).copy(alpha = 0.14f))
-                                        .border(
-                                            width = 0.5.dp,
-                                            color = Color(0xFFDC2626).copy(alpha = 0.4f),
-                                            shape = RoundedCornerShape(4.dp)
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .background(
+                                            Brush.horizontalGradient(
+                                                listOf(
+                                                    Color(0xFFDC2626).copy(alpha = 0.22f),
+                                                    Color(0xFF991B1B).copy(alpha = 0.15f)
+                                                )
+                                            )
                                         )
-                                        .padding(horizontal = 6.dp, vertical = 2.dp),
+                                        .border(
+                                            width = 1.dp,
+                                            brush = Brush.horizontalGradient(
+                                                listOf(
+                                                    Color(0xFFEF4444).copy(alpha = 0.6f),
+                                                    Color(0xFFDC2626).copy(alpha = 0.2f)
+                                                )
+                                            ),
+                                            shape = RoundedCornerShape(6.dp)
+                                        )
+                                        .padding(horizontal = 6.dp, vertical = 2.5.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     PulsingLiveDot()
@@ -155,56 +163,79 @@ fun MainScreen(
                                             fontSize = 9.sp,
                                             fontWeight = FontWeight.ExtraBold,
                                             color = Color(0xFFEF4444),
-                                            letterSpacing = 0.6.sp
+                                            letterSpacing = 0.7.sp
                                         )
                                     )
                                 }
                             }
                             Text(
-                                text = "Toronto Stock Exchange • Bay St Terminal",
+                                text = "Toronto Stock Exchange • Bay St",
                                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
 
-                        // Ticker Tape toggle button
-                        IconButton(
+                        // Ticker Tape toggle button (Glassmorphic)
+                        GlassButton(
                             onClick = { showTickerTape = !showTickerTape },
                             modifier = Modifier
                                 .size(36.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(
-                                    if (showTickerTape) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-                                    else Color.Transparent
-                                )
-                                .testTag("toggle_ticker_tape")
+                                .testTag("toggle_ticker_tape"),
+                            isDark = isDark,
+                            accentColor = if (showTickerTape) Color(0xFFDC2626) else Color(0xFF64748B)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.ViewStream,
                                 contentDescription = "Toggle Ticker Tape",
-                                tint = if (showTickerTape) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(19.dp)
+                                tint = if (showTickerTape) Color(0xFFEF4444) else MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier
+                                    .size(18.dp)
+                                    .align(Alignment.Center)
                             )
                         }
 
-                        Spacer(modifier = Modifier.width(4.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
 
-                        // Theme switch button
-                        IconButton(
+                        // Theme switch button (Glassmorphic)
+                        GlassButton(
                             onClick = onToggleTheme,
                             modifier = Modifier
                                 .size(36.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f))
-                                .testTag("toggle_theme")
+                                .testTag("toggle_theme"),
+                            isDark = isDark,
+                            accentColor = Color(0xFFF59E0B)
                         ) {
                             Icon(
                                 imageVector = if (isDark) Icons.Default.LightMode else Icons.Default.DarkMode,
                                 contentDescription = "Toggle Dark/Light Mode",
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(19.dp)
+                                tint = if (isDark) Color(0xFFFBBF24) else Color(0xFF6366F1),
+                                modifier = Modifier
+                                    .size(18.dp)
+                                    .align(Alignment.Center)
                             )
                         }
+
+                        Spacer(modifier = Modifier.width(6.dp))
+
+                        // Info / About Us button (Glassmorphic)
+                        GlassButton(
+                            onClick = { showAboutDialog = true },
+                            modifier = Modifier
+                                .size(36.dp)
+                                .testTag("open_about_dialog"),
+                            isDark = isDark,
+                            accentColor = Color(0xFF3B82F6)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = "About Canada Stock Screener & Privacy",
+                                tint = Color(0xFF60A5FA),
+                                modifier = Modifier
+                                    .size(18.dp)
+                                    .align(Alignment.Center)
+                            )
+                        }
+
                     }
 
                     // Top Ticker Tape (Live Canadian TSX stream)
@@ -239,106 +270,119 @@ fun MainScreen(
             }
         },
         bottomBar = {
-            NavigationBar(
-                containerColor = MaterialTheme.colorScheme.surface,
-                tonalElevation = 8.dp,
-                modifier = Modifier.testTag("bottom_nav_bar")
-            ) {
-                NavigationBarItem(
-                    selected = selectedTab == 0,
-                    onClick = { selectedTab = 0 },
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Default.ShowChart,
-                            contentDescription = "TSX Chart"
-                        )
-                    },
-                    label = { Text("Charts", fontSize = 11.sp, fontWeight = FontWeight.Medium) },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = MaterialTheme.colorScheme.onPrimary,
-                        indicatorColor = MaterialTheme.colorScheme.primary
-                    ),
-                    modifier = Modifier.testTag("nav_item_charts")
-                )
-
-                NavigationBarItem(
-                    selected = selectedTab == 1,
-                    onClick = { selectedTab = 1 },
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Default.GridView,
-                            contentDescription = "Stock Heatmap"
-                        )
-                    },
-                    label = { Text("Heatmap", fontSize = 11.sp, fontWeight = FontWeight.Medium) },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = MaterialTheme.colorScheme.onPrimary,
-                        indicatorColor = MaterialTheme.colorScheme.primary
-                    ),
-                    modifier = Modifier.testTag("nav_item_heatmap")
-                )
-
-                NavigationBarItem(
-                    selected = selectedTab == 2,
-                    onClick = { selectedTab = 2 },
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Default.FilterList,
-                            contentDescription = "Stock Screener"
-                        )
-                    },
-                    label = { Text("Screener", fontSize = 11.sp, fontWeight = FontWeight.Medium) },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = MaterialTheme.colorScheme.onPrimary,
-                        indicatorColor = MaterialTheme.colorScheme.primary
-                    ),
-                    modifier = Modifier.testTag("nav_item_screener")
-                )
-
-                NavigationBarItem(
-                    selected = selectedTab == 3,
-                    onClick = { selectedTab = 3 },
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Default.CalendarMonth,
-                            contentDescription = "Economic Events"
-                        )
-                    },
-                    label = { Text("Economy", fontSize = 11.sp, fontWeight = FontWeight.Medium) },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = MaterialTheme.colorScheme.onPrimary,
-                        indicatorColor = MaterialTheme.colorScheme.primary
-                    ),
-                    modifier = Modifier.testTag("nav_item_economy")
-                )
-
-                NavigationBarItem(
-                    selected = selectedTab == 4,
-                    onClick = { selectedTab = 4 },
-                    icon = {
-                        BadgedBox(
-                            badge = {
-                                Box(
-                                    modifier = Modifier
-                                        .size(6.dp)
-                                        .clip(CircleShape)
-                                        .background(MaterialTheme.colorScheme.primary)
-                                )
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Analytics,
-                                contentDescription = "Stock Hub"
+            // Glassmorphic Floating Navigation Dock with custom micro-animations
+            Surface(
+                color = Color.Transparent,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
+                    .clip(RoundedCornerShape(22.dp))
+                    .background(
+                        Brush.linearGradient(
+                            colors = if (isDark) listOf(
+                                Color(0xFF1E293B).copy(alpha = 0.88f),
+                                Color(0xFF0F172A).copy(alpha = 0.94f)
+                            ) else listOf(
+                                Color.White.copy(alpha = 0.94f),
+                                Color(0xFFF1F5F9).copy(alpha = 0.90f)
                             )
-                        }
-                    },
-                    label = { Text("Stock Hub", fontSize = 11.sp, fontWeight = FontWeight.Medium) },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = MaterialTheme.colorScheme.onPrimary,
-                        indicatorColor = MaterialTheme.colorScheme.primary
-                    ),
-                    modifier = Modifier.testTag("nav_item_stock_hub")
-                )
+                        )
+                    )
+                    .border(
+                        width = 1.dp,
+                        brush = Brush.linearGradient(
+                            colors = if (isDark) listOf(
+                                Color(0xFFDC2626).copy(alpha = 0.45f),
+                                Color.White.copy(alpha = 0.12f),
+                                Color(0xFF334155).copy(alpha = 0.2f)
+                            ) else listOf(
+                                Color(0xFFDC2626).copy(alpha = 0.35f),
+                                Color.White.copy(alpha = 0.8f),
+                                Color(0xFFCBD5E1).copy(alpha = 0.4f)
+                            )
+                        ),
+                        shape = RoundedCornerShape(22.dp)
+                    )
+            ) {
+                NavigationBar(
+                    containerColor = Color.Transparent,
+                    tonalElevation = 0.dp,
+                    modifier = Modifier.testTag("bottom_nav_bar")
+                ) {
+                    val tabs = listOf(
+                        Triple("Chart", Icons.Default.CandlestickChart, "nav_item_charts"),
+                        Triple("Heatmap", Icons.Default.GridView, "nav_item_heatmap"),
+                        Triple("Screener", Icons.Default.TravelExplore, "nav_item_screener"),
+                        Triple("Calendar", Icons.Default.CalendarMonth, "nav_item_economy"),
+                        Triple("Stock Hub", Icons.Default.Analytics, "nav_item_stock_hub")
+                    )
+
+                    tabs.forEachIndexed { index, (label, icon, testTag) ->
+                        val isSelected = selectedTab == index
+                        val iconScale by animateFloatAsState(
+                            targetValue = if (isSelected) 1.15f else 1.0f,
+                            animationSpec = spring(dampingRatio = 0.65f, stiffness = 400f),
+                            label = "nav_icon_scale_$index"
+                        )
+
+                        NavigationBarItem(
+                            selected = isSelected,
+                            onClick = { selectedTab = index },
+                            icon = {
+                                Box(
+                                    modifier = Modifier.scale(iconScale),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (index == 0) {
+                                        // Custom Financial Candlestick icon
+                                        CandlestickChartVector(
+                                            modifier = Modifier.size(22.dp),
+                                            tint = if (isSelected) Color(0xFF10B981) else MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    } else if (index == 4) {
+                                        BadgedBox(
+                                            badge = {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .size(7.dp)
+                                                        .clip(CircleShape)
+                                                        .background(Color(0xFFDC2626))
+                                                )
+                                            }
+                                        ) {
+                                            Icon(
+                                                imageVector = icon,
+                                                contentDescription = label,
+                                                modifier = Modifier.size(22.dp)
+                                            )
+                                        }
+                                    } else {
+                                        Icon(
+                                            imageVector = icon,
+                                            contentDescription = label,
+                                            modifier = Modifier.size(22.dp)
+                                        )
+                                    }
+                                }
+                            },
+                            label = {
+                                Text(
+                                    text = label,
+                                    fontSize = 11.sp,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                                )
+                            },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = Color.White,
+                                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                selectedTextColor = if (isDark) Color(0xFFF1F5F9) else Color(0xFF0F172A),
+                                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                indicatorColor = Color(0xFFDC2626)
+                            ),
+                            modifier = Modifier.testTag(testTag)
+                        )
+                    }
+                }
             }
         }
     ) { innerPadding ->
@@ -385,6 +429,12 @@ fun MainScreen(
                 }
             }
         }
+    }
+
+    if (showAboutDialog) {
+        AboutDialog(
+            onDismiss = { showAboutDialog = false }
+        )
     }
 }
 
