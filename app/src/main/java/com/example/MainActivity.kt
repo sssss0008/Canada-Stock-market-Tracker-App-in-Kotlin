@@ -31,6 +31,17 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         try {
             val baseCache = File(cacheDir, "WebView/Default/HTTP Cache")
+            if (baseCache.exists()) {
+                // Remove stale or corrupted index files from previous runs
+                val indexFile = File(baseCache, "index")
+                val indexDir = File(baseCache, "index-dir")
+                if (indexFile.exists() && indexFile.isDirectory.not() && indexFile.length() == 0L) {
+                    indexFile.delete()
+                }
+                if (indexDir.exists() && indexDir.isDirectory.not()) {
+                    indexDir.delete()
+                }
+            }
             val jsCache = File(baseCache, "Code Cache/js")
             val wasmCache = File(baseCache, "Code Cache/wasm")
             if (!jsCache.exists()) jsCache.mkdirs()
