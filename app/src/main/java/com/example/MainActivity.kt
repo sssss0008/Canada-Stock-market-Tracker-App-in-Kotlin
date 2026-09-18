@@ -30,10 +30,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         try {
-            val webViewCacheDir = File(cacheDir, "WebView/Default/HTTP Cache/Code Cache/js")
-            if (!webViewCacheDir.exists()) {
-                webViewCacheDir.mkdirs()
-            }
+            val baseCache = File(cacheDir, "WebView/Default/HTTP Cache")
+            val jsCache = File(baseCache, "Code Cache/js")
+            val wasmCache = File(baseCache, "Code Cache/wasm")
+            if (!jsCache.exists()) jsCache.mkdirs()
+            if (!wasmCache.exists()) wasmCache.mkdirs()
         } catch (_: Exception) {}
         enableEdgeToEdge()
         setContent {
